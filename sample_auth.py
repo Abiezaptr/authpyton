@@ -28,7 +28,7 @@ def login():
     params = urllib.parse.urlencode({
         'response_type': 'code',
         'client_id': 'a10d6918-5758-4f0f-b716-787053507b52',  # Ganti dengan client ID Anda
-        'redirect_uri': 'http://localhost:5000/login/authorized',
+        'redirect_uri': 'https://192.168.0.176:5000/login/authorized',  # Ganti port sesuai kebutuhan
         'state': auth_state,
         'resource': 'https://graph.microsoft.com/',  # Ganti dengan resource yang Anda inginkan
         'prompt': prompt_behavior
@@ -47,7 +47,7 @@ def authorized():
 
     auth_context = adal.AuthenticationContext('https://login.microsoftonline.com/common', api_version=None)
     token_response = auth_context.acquire_token_with_authorization_code(
-        code, 'http://localhost:5000/login/authorized', 'https://graph.microsoft.com/',
+        code, 'https://192.168.0.176:5000/login/authorized', 'https://graph.microsoft.com/',
         'a10d6918-5758-4f0f-b716-787053507b52', '7uU8Q~ekwzwEgyjYlvXFMuBFxIeNNFnxMKWG7bj_'  # Ganti sesuai kebutuhan
     )
 
@@ -58,7 +58,7 @@ def authorized():
 
     # Redirect ke halaman Laravel sambil membawa semua data di URL
     redirect_url = (
-        f"http://192.168.0.176/microsoft/callback?"
+        f"https://192.168.0.176/microsoft/callback?"  # Ganti dengan IP atau domain yang sesuai
         f"displayName={graph_data.get('displayName')}&"
         f"givenName={graph_data.get('givenName')}&"
         f"id={graph_data.get('id')}&"
@@ -73,4 +73,4 @@ def authorized():
     return redirect(redirect_url)
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000, ssl_context='adhoc')
