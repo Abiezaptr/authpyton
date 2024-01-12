@@ -4,12 +4,24 @@ import uuid
 from flask import Flask, redirect, request, render_template, jsonify
 import adal
 import requests
+from OpenSSL import crypto
 
 app = Flask(__name__, template_folder='static/templates')
 app.debug = True
 app.secret_key = 'development'
 
 SESSION = requests.Session()
+
+# Gunakan sertifikat dan kunci yang sudah dibuat di root proyek
+CERT_FILE = 'cert.pem'
+KEY_FILE = 'key.pem'
+
+# Periksa apakah file sertifikat dan kunci ada
+if not os.path.isfile(CERT_FILE) or not os.path.isfile(KEY_FILE):
+    raise FileNotFoundError("The certificate or key file was not found.")
+
+# Gunakan sertifikat dan kunci yang sudah dibuat
+ssl_context = (CERT_FILE, KEY_FILE)
 
 @app.route('/')
 def homepage():
@@ -60,17 +72,14 @@ def authorized():
     redirect_url = (
         f"https://192.168.0.176/microsoft/callback?"  # Ganti dengan IP atau domain yang sesuai
         f"displayName={graph_data.get('displayName')}&"
-        f"givenName={graph_data.get('givenName')}&"
         f"id={graph_data.get('id')}&"
         f"jobTitle={graph_data.get('jobTitle')}&"
         f"mail={graph_data.get('mail')}&"
         f"mobilePhone={graph_data.get('mobilePhone')}&"
-        f"officeLocation={graph_data.get('officeLocation')}&"
-        f"preferredLanguage={graph_data.get('preferredLanguage')}&"
-        f"surname={graph_data.get('surname')}&"
-        f"userPrincipalName={graph_data.get('userPrincipalName')}"
+        f"officeLocation={graph_data.get('officeLocation')}"
     )
     return redirect(redirect_url)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000, ssl_context='adhoc')
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+    app.run(debug=True, host='0.0.0.0', port=5000, ssl_context=ssl_context, use_debugger=True, use_reloader=True)
