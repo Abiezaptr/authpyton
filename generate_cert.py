@@ -8,7 +8,7 @@ def generate_self_signed_cert(cert_file, key_file, days=365):
         existing_cert = crypto.load_certificate(crypto.FILETYPE_PEM, open(cert_file, 'rt').read())
         expiration_date = datetime.strptime(existing_cert.get_notAfter().decode('utf-8'), '%Y%m%d%H%M%SZ')
         if datetime.now() < expiration_date:
-            print("Certificate is still valid. No need to create a new one.")
+            print("Certificate is still valid.")
             return
 
     # Buat sertifikat baru jika tidak ada atau sudah kadaluwarsa
