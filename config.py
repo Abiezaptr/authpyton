@@ -6,7 +6,7 @@ other secure storage mechanism.
 
 CLIENT_ID = 'a10d6918-5758-4f0f-b716-787053507b52'
 CLIENT_SECRET = '7uU8Q~ekwzwEgyjYlvXFMuBFxIeNNFnxMKWG7bj_'
-REDIRECT_URI = 'http://localhost:5000/login/authorized'
+REDIRECT_URI = 'https://192.168.0.176:5000/login/authorized'
 
 # AUTHORITY_URL ending determines type of account that can be authenticated:
 # /organizations = organizational accounts only
