@@ -3,8 +3,10 @@ import urllib.parse
 import uuid
 from flask import Flask, redirect, request, render_template, jsonify
 import adal
+import flask
 import requests
 from OpenSSL import crypto
+import config
 
 app = Flask(__name__, template_folder='static/templates')
 app.debug = True
@@ -37,16 +39,14 @@ def login():
     # Untuk contoh ini, pengguna memilih akun untuk mengotentikasi.
     prompt_behavior = 'select_account'
 
-    params = urllib.parse.urlencode({
-        'response_type': 'code',
-        'client_id': 'a10d6918-5758-4f0f-b716-787053507b52',  # Ganti dengan client ID Anda
-        'redirect_uri': 'https://192.168.0.176:5000/login/authorized',  # Ganti port sesuai kebutuhan
-        'state': auth_state,
-        'resource': 'https://graph.microsoft.com/',  # Ganti dengan resource yang Anda inginkan
-        'prompt': prompt_behavior
-    })
+    params = urllib.parse.urlencode({'response_type': 'code',
+                                     'client_id': config.CLIENT_ID,
+                                     'redirect_uri': config.REDIRECT_URI,
+                                     'state': auth_state,
+                                     'resource': config.RESOURCE,
+                                     'prompt': prompt_behavior})
 
-    return redirect('https://login.microsoftonline.com/common/oauth2/authorize?' + params)  # Ganti dengan authority URL Anda
+    return flask.redirect(config.AUTHORITY_URL + '/oauth2/authorize?' + params)
 
 @app.route('/login/authorized')
 def authorized():
@@ -57,10 +57,10 @@ def authorized():
     if auth_state != SESSION.auth_state:
         raise Exception('state returned to redirect URL does not match!')
 
-    auth_context = adal.AuthenticationContext('https://login.microsoftonline.com/common', api_version=None)
+    auth_context = adal.AuthenticationContext(config.AUTHORITY_URL, api_version=None)
     token_response = auth_context.acquire_token_with_authorization_code(
-        code, 'https://192.168.0.176:5000/login/authorized', 'https://graph.microsoft.com/',
-        'a10d6918-5758-4f0f-b716-787053507b52', '7uU8Q~ekwzwEgyjYlvXFMuBFxIeNNFnxMKWG7bj_'  # Ganti sesuai kebutuhan
+        code, config.REDIRECT_URI, config.RESOURCE,
+        config.CLIENT_ID, config.CLIENT_SECRET  # Ganti sesuai kebutuhan
     )
 
     # Dapatkan data dari Microsoft Graph
@@ -70,7 +70,7 @@ def authorized():
 
     # Redirect ke halaman Laravel sambil membawa semua data di URL
     redirect_url = (
-        f"https://192.168.0.176/microsoft/callback?"  # Ganti dengan IP atau domain yang sesuai
+        f"https://192.168.0.176/portaldashboard/callback?"  # Ganti dengan IP atau domain yang sesuai
         f"displayName={graph_data.get('displayName')}&"
         f"id={graph_data.get('id')}&"
         f"jobTitle={graph_data.get('jobTitle')}&"
